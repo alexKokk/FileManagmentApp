@@ -5,10 +5,11 @@ from sqlalchemy.sql import func
 
 class File(db.Model):
     id = db.Column(db.Integer, primary_key=True)
-    data = db.Column(db.String(10000))
-    date = db.Column(db.DateTime(timezone=True), default=func.now())
+    # Removed data column for file uploads
+    # date = db.Column(db.DateTime(timezone=True), default=func.now())  # Optional, keep if needed
     user_id = db.Column(db.Integer, db.ForeignKey('user.id'))
-
+    filename = db.Column(db.String(255))  # Optional, stores filename
+    filepath = db.Column(db.String(255))  # Stores filepath (local storage)
 
 class User(db.Model, UserMixin):
     id = db.Column(db.Integer, primary_key=True)

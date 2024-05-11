@@ -4,18 +4,17 @@
 <ul class="list-group list-group-flush" id="files">
   {% for file in user.files %}
   <li class="list-group-item">
-    {{ file.data }}
-    <button type="button" class="close" onClick="deleteFile({{ file.id }})">
+    {{ file.filename }}  <button type="button" class="close" onClick="deleteFile({{ file.id }})">
       <span aria-hidden="true">&times;</span>
     </button>
   </li>
   {% endfor %}
 </ul>
-<form method="POST">
-  <textarea name="file" id="file" class="form-control"></textarea>
+<form method="POST" enctype="multipart/form-data">
+  <input type="file" name="file" id="file" class="form-control">
   <br />
   <div align="center">
-    <button type="submit" class="btn btn-primary">Add File</button>
+    <button type="submit" class="btn btn-primary">Upload File</button>
   </div>
 </form>
 {% endblock %}
