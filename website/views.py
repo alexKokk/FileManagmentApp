@@ -13,25 +13,30 @@ views = Blueprint('views', __name__)
 @login_required
 def home():
     if request.method == 'POST':
-        uploaded_file = request.files['file']  # Gets the file from the HTML
-
+        uploaded_file = request.files['file']
         if uploaded_file.filename == '':
-            flash('File is empty!', category='error')
+            flash('File is too short!', category='error')
         else:
-            filename = secure_filename(uploaded_file.filename)  # Sanitize filename
-            filepath = os.path.join(current_app.config['UPLOAD_FOLDER'], filename)
+            filename = secure_filename(uploaded_file.filename)
+
+            # Construct user-specific filepath
+            user_folder = os.path.join(current_app.config['UPLOAD_FOLDER'], str(current_user.id))
+            if not os.path.exists(user_folder):
+                os.makedirs(user_folder)  # Create user directory
+            filepath = os.path.join(user_folder, filename)
             uploaded_file.save(filepath)
 
-            new_file = File(filename=filename, filepath=filepath, user_id=current_user.id)
-            db.session.add(new_file)  # adding the file to the database
+            # Make new db entry
+            new_file = File(user_id=current_user.id, filename=filename, filepath=filepath)  # Adjust based on your model
+            db.session.add(new_file)
             db.session.commit()
-            flash('File uploaded successfully!', category='success')
 
     return render_template("home.html", user=current_user)
 
     #  If you need to update the displayed content on the "home" page based on the upload, use render_template. 
     #  If a simple redirection is sufficient, use redirect.
     #return redirect(url_for('home'))
+    
 
 @views.route('/delete-file', methods=['POST'])
 def delete_file():
@@ -48,11 +53,13 @@ def delete_file():
             # Unauthorized deletion attempt
             return jsonify({'message': 'Unauthorized deletion'}), 403
 
+        # Access filepath from the database record
+        filepath = file.filepath
+
         # Delete the actual file
-        file_path = os.path.join(current_app.config['UPLOAD_FOLDER'], file.filename)
-        if os.path.exists(file_path):
+        if os.path.exists(filepath):
             try:
-                os.remove(file_path)
+                os.remove(filepath)
             except OSError as e:
                 print(f"Error deleting file: {e}")
                 return jsonify({'message': 'Error deleting file'}), 500
