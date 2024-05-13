@@ -1,0 +1,15 @@
+{% extends "base.html" %}
+{% block title %}Home{% endblock %}
+{% block content %}
+<h1>Share Files</h1>
+{% for user in available_users %}
+  <div>
+    <input type="checkbox" name="selected_user_ids" value="{{ user.id }}">
+    <label for="{{ user.id }}">{{ user.email }}</label>
+  </div>
+{% endfor %}
+
+<form method="POST" action="/share-file">
+  <input type="hidden" name="selected_file_ids" value="{{ stored_selected_file_ids }}">  <button type="submit">Share Files</button>
+</form>
+{% endblock %}

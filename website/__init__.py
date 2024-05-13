@@ -3,6 +3,7 @@ from flask_sqlalchemy import SQLAlchemy
 from os import path
 import os
 from flask_login import LoginManager
+from flask_session import Session
 
 db = SQLAlchemy()
 DB_NAME = "database.db"
@@ -10,9 +11,11 @@ DB_NAME = "database.db"
 
 def create_app():
     app = Flask(__name__)
-    app.config['SECRET_KEY'] = 'hjshjhdjah kjshkjdhjs'
+    app.config['SECRET_KEY'] = 'hjshjhdjah kjshkjdhjs' #TODO CHANGE at a strong one
     app.config['SQLALCHEMY_DATABASE_URI'] = f'sqlite:///{DB_NAME}'
     app.config['UPLOAD_FOLDER'] = os.path.join(app.instance_path, 'uploads')
+    app.config['SESSION_TYPE'] = 'filesystem'  # Configure session storage (e.g., filesystem)
+    Session(app)
 
     if not path.exists(app.config['UPLOAD_FOLDER']):
         os.makedirs(app.config['UPLOAD_FOLDER'])

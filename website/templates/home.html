@@ -1,20 +1,55 @@
-{% extends "base.html" %} {% block title %}Home{% endblock %} {% block content
-%}
-<h1 align="center">Files</h1>
+{% extends "base.html" %}
+{% block title %}Home{% endblock %}
+{% block content %}
+<h1>Files</h1>
+
 <ul class="list-group list-group-flush" id="files">
   {% for file in user.files %}
-  <li class="list-group-item">
-    {{ file.filename }}  <button type="button" class="close" onClick="deleteFile({{ file.id }})">
-      <span aria-hidden="true">&times;</span>
+  <li class="list-group-item d-flex justify-content-between align-items-center">
+    <input type="checkbox" class="form-check-input mr-2" id="file_{{ file.id }}" value="{{ file.id }}" onchange="updateSelectedFiles()">
+    {{ file.filename }}
+    <button type="button" class="btn btn-danger btn-sm" onclick="deleteFile({{ file.id }})">
+      Delete
     </button>
   </li>
   {% endfor %}
 </ul>
+
+<form method="POST" id="share-form" action="/select-users" onsubmit="return submitSelectedFiles()">
+  <input type="hidden" name="selected_files" id="selected_files">
+  <button type="submit" class="btn btn-primary">Share Selected</button>
+</form>
+
 <form method="POST" enctype="multipart/form-data">
   <input type="file" name="file" id="file" class="form-control">
   <br />
-  <div align="center">
+  <div class="text-center">
     <button type="submit" class="btn btn-primary">Upload File</button>
   </div>
 </form>
 {% endblock %}
+
+<script>
+  let selectedFiles = [];
+
+  function updateSelectedFiles() {
+    selectedFiles = [];  // Reset selected files on each change
+    const checkboxes = document.querySelectorAll('#files input[type="checkbox"]');
+    for (const checkbox of checkboxes) {
+      if (checkbox.checked) {
+        selectedFiles.push(checkbox.value);
+      }
+    }
+    document.getElementById('selected_files').value = JSON.stringify(selectedFiles);  // Convert to JSON string
+    session.storage.setItem('selected_file_ids', JSON.stringify(selectedFiles));
+  }
+
+  function submitSelectedFiles() {
+    // Access selected files from hidden field (already updated by updateSelectedFiles)
+    const selectedFiles = JSON.parse(document.getElementById('selected_files').value);
+
+    // Perform any validation on selectedFiles (optional)
+
+    return true;  // Allow form submission
+  }
+</script>
