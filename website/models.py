@@ -21,6 +21,7 @@ class User(db.Model, UserMixin):
     password = db.Column(db.String(150))
     first_name = db.Column(db.String(150))
     files = db.relationship('File')  # One-to-Many relationship
+    is_admin = db.Column(db.Boolean, default=False)
 
 
 # Association table for file sharing
