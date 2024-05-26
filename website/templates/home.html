@@ -8,6 +8,7 @@
   <li class="list-group-item d-flex justify-content-between align-items-center">
     <input type="checkbox" class="form-check-input mr-2" id="file_{{ file.id }}" value="{{ file.id }}" onchange="updateSelectedFiles()">
     {{ file.filename }}
+    <a href="{{ url_for('views.download_file', filename=file.filename) }}" class="btn btn-primary btn-sm" download>Download</a>
     <button type="button" class="btn btn-danger btn-sm" onclick="deleteFile({{ file.id }})">
       Delete
     </button>
@@ -18,7 +19,9 @@
 <h2>Shared Files</h2>
 <ul class="list-group list-group-flush" id="shared-files">
   {% for file in shared_files %}
-  <span class="text">{{ file.filename }}</span>  
+  <li class="list-group-item d-flex justify-content-between align-items-center">
+  <span class="text">{{ file.filename }}</span>
+  <a href="{{ url_for('views.download_file', filename=file.filename) }}" class="btn btn-primary btn-sm" download>Download</a>
   </li>
   {% endfor %}
 </ul>

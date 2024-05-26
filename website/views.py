@@ -151,3 +151,19 @@ def share_file():
       flash(f'An error occurred while sharing files: {str(e)}', 'error')
       return redirect(url_for('views.select_users'))  # Redirect back to the user selection page
 
+@views.route('/download-file/<filename>')
+def download_file(filename):
+  user_id = current_user.id  # Assuming you have a current_user object available
+  # Construct user-specific filepath based on uploaded filename
+  filepath = os.path.join(current_app.config['UPLOAD_FOLDER'], str(user_id), filename)
+
+  if os.path.isfile(filepath):  # Check if file exists
+    with open(filepath, 'rb') as file:
+      file_data = file.read()
+      response = make_response(file_data)
+      response.headers['Content-Disposition'] = f'attachment; filename={filename}'
+      response.headers['Content-Type'] = 'application/octet-stream'
+      return response
+  else:
+    flash('File not found!', 'error')
+    return redirect(url_for('home'))  # Redirect back to the home page
