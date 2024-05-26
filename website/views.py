@@ -1,4 +1,4 @@
-from flask import Blueprint, render_template, request, flash, jsonify, current_app, session, redirect, url_for
+from flask import Blueprint, render_template, request, flash, jsonify, current_app, session, redirect, url_for,  make_response
 from flask_login import login_required, current_user
 from werkzeug.utils import secure_filename
 from .models import File, User
@@ -166,4 +166,4 @@ def download_file(filename):
       return response
   else:
     flash('File not found!', 'error')
-    return redirect(url_for('home'))  # Redirect back to the home page
+    return redirect(url_for('views.home'))  # Redirect back to the home page
