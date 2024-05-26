@@ -112,6 +112,24 @@
       .catch(error => console.error(error));
   }
   </script>
+  <script>
+    function updateSelectedFiles() {
+      const checkboxes = document.querySelectorAll('#files input[type="checkbox"]');
+      let selectedFilesCount = 0;
+      for (const checkbox of checkboxes) {
+        if (checkbox.checked) {
+          selectedFilesCount++;
+        }
+      }
+      const selectedFilesInput = document.getElementById('selected_files');
+      selectedFilesInput.value = selectedFilesCount; // Optional, update hidden input
+      const shareButton = document.getElementById('share-button');
+      shareButton.disabled = selectedFilesCount === 0;
+    }
+  
+    // Call updateSelectedFiles() initially to set the button state
+    updateSelectedFiles();
+  </script>
 {% endblock %}
   </body>
 </html>

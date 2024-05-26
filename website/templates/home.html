@@ -18,15 +18,14 @@
 <h2>Shared Files</h2>
 <ul class="list-group list-group-flush" id="shared-files">
   {% for file in shared_files %}
-  <span class="text-muted">{{ file.filename }}</span>  <button type="button" class="btn btn-danger btn-sm disabled" onclick="deleteFile({{ file.id }})">  Delete (Disabled)
-    </button>
+  <span class="text">{{ file.filename }}</span>  
   </li>
   {% endfor %}
 </ul>
 
 <form method="POST" id="share-form" action="/select-users">
   <input type="hidden" name="selected_files" id="selected_files">
-  <button type="submit" class="btn btn-primary">Share Selected</button>
+  <button type="submit" class="btn btn-primary" disabled id="share-button">Share Selected</button>
 </form>
 
 <form method="POST" enctype="multipart/form-data">
@@ -36,4 +35,5 @@
     <button type="submit" class="btn btn-primary">Upload File</button>
   </div>
 </form>
+
 {% endblock %}
