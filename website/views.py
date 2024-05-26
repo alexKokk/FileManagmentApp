@@ -1,10 +1,11 @@
-from flask import Blueprint, render_template, request, flash, jsonify, current_app, session
+from flask import Blueprint, render_template, request, flash, jsonify, current_app, session, redirect, url_for
 from flask_login import login_required, current_user
 from werkzeug.utils import secure_filename
 from .models import File, User
 from . import db
 import json
 import os
+from sqlalchemy import join
 
 views = Blueprint('views', __name__)
 
@@ -30,8 +31,10 @@ def home():
             new_file = File(user_id=current_user.id, filename=filename, filepath=filepath)  # Adjust based on your model
             db.session.add(new_file)
             db.session.commit()
-
-    return render_template("home.html", user=current_user)
+    
+    shared_files = File.query.join(File.shared_with).filter(User.id == current_user.id).all()
+    print(shared_files)
+    return render_template("home.html", user=current_user, shared_files=shared_files)
 
     #  If you need to update the displayed content on the "home" page based on the upload, use render_template. 
     #  If a simple redirection is sufficient, use redirect.
@@ -75,52 +78,76 @@ def delete_file():
         flash('Error deleting file: {e}', category='error')
         return jsonify({'message': 'Error deleting file'}), 500
 
-@views.route('/select-users', methods=['GET', 'POST'])
+@views.route('/update-selected-users', methods=['POST'])
+@login_required
+def update_selected_users():
+    try:
+        data = request.get_json()
+        if data is None:
+            return jsonify({'error': 'No data received in request'}), 400
+
+        selected_files = data.get('selected_files', [])  # Handle missing key gracefully
+        session['selected_file_ids'] = json.dumps(selected_files)
+
+        return jsonify({'success': True})
+
+    except Exception as e:
+        print(f"Error updating selected files: {e}")
+        return jsonify({'error': 'Error updating selected files'}), 500
+
+@views.route('/select-users', methods=['GET','POST'])
 @login_required
 def select_users():
-    if request.method == 'GET':
-        # Existing logic to retrieve files (optional)
-        return render_template("home.html", files=files)  # Pass files data to template for display
-
+    # # After successful retrieval, remove from session
+    # session.pop('selected_file_ids', None)    
+    # Get all users (excluding the current user)
     if request.method == 'POST':
-        selected_files = request.form.getlist('selected_files')  # Assuming a form with checkboxes for files
-        # ... (logic to validate and process selected files) ...
-
-        # Retrieve stored selected file IDs (assuming session)
-        stored_selected_file_ids_str = session.get('selected_file_ids')
-        if stored_selected_file_ids_str:
-            try:
-                stored_selected_file_ids = json.loads(stored_selected_file_ids_str)  # Convert back to list
-            except Exception:
-                stored_selected_file_ids = []  # Handle potential errors during conversion
-        else:
-            stored_selected_file_ids = []  # Set to an empty list if no value found in session
-
-        # Get all users (excluding the current user)
         all_users = User.query.all()
+        stored_selected_file_ids = json.loads(session.get('selected_file_ids', '[]'))  # Handle missing key gracefully
 
         # Filter users who don't own any of the selected files
-        available_users = [user for user in all_users if user != current_user and not any(file_id == user.id for file_id in stored_selected_file_ids)]
-
+        available_users = [user for user in all_users if user != current_user and not any(file_id == user.id for file_id in stored_selected_file_ids)]  
         # Extract user data (ID and email)
         available_user_data = []
         for user in available_users:
-            available_user_data.append({'id': user.id, 'email': user.email})
-
-        return render_template("select_users.html", available_users=available_user_data, user=current_user)  # Render select_users.html
+            available_user_data.append({'id': user.id, 'email': user.email})    
+    return render_template("select_users.html", available_users=available_user_data, user=current_user)  # Render select_users.html
 
 @views.route('/share-file', methods=['POST'])
 @login_required
 def share_file():
-    # Retrieve selected user IDs from the form
-    selected_user_ids = request.form.getlist('selected_user_ids')
+    selected_user_ids = request.form.getlist('selected_user_ids[]')  # Get a list of selected user IDs
+    print(f"Received selected user IDs: {selected_user_ids}")
+    stored_selected_file_ids = json.loads(session.get('selected_file_ids', '[]'))
+    
+    try:    
+      # Get the selected files based on the previously stored IDs
+      selected_files = File.query.filter(File.id.in_(stored_selected_file_ids)).all()
+      for user_id in selected_user_ids:
+        # Find the user object based on the ID
+        user = User.query.get(user_id)  
+        # Check if user already has access to any of the selected files
+        already_shared_files = db.session.query(File) \
+        .join(User.shared_files) \
+        .filter(User.id == user_id) \
+        .filter(File.id.in_(stored_selected_file_ids)) \
+        .all()
 
-    # Access previously stored selected file IDs (from hidden field)
-    stored_selected_file_ids = request.form.get('selected_file_ids')  # Assuming a hidden field
+        print(f"SHARING FILES")
+        # Share files only if the user doesn't already have access
+        for file in selected_files:
+          if file not in already_shared_files:
+            file.shared_with.append(user)  # Add the user to the file's "shared_with" relationship
+            flash(f'succeed File Share: {file}', 'success')
+      db.session.commit()   
+      # Clear temporary session data
+      session.pop('selected_file_ids', None)    
+      # Flash a success message (consider using Flask-WTF for forms and flash messages)
+      #flash('Files shared successfully!', 'success')
+      return redirect(url_for('views.home'))  # Redirect to the home page after sharing 
+    except Exception as e:
+      # Handle errors appropriately
+      db.session.rollback()  # Rollback database changes on error
+      flash(f'An error occurred while sharing files: {str(e)}', 'error')
+      return redirect(url_for('views.select_users'))  # Redirect back to the user selection page
 
-    # ... (logic to validate and process IDs) ...
-
-    # Update database to share files with selected users
-    # ... (use selected_file_ids and selected_user_ids to create database entries) ...
-
-    return render_template("home.html", user=current_user) 

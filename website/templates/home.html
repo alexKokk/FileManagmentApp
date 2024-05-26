@@ -15,7 +15,16 @@
   {% endfor %}
 </ul>
 
-<form method="POST" id="share-form" action="/select-users" onsubmit="return submitSelectedFiles()">
+<h2>Shared Files</h2>
+<ul class="list-group list-group-flush" id="shared-files">
+  {% for file in shared_files %}
+  <span class="text-muted">{{ file.filename }}</span>  <button type="button" class="btn btn-danger btn-sm disabled" onclick="deleteFile({{ file.id }})">  Delete (Disabled)
+    </button>
+  </li>
+  {% endfor %}
+</ul>
+
+<form method="POST" id="share-form" action="/select-users">
   <input type="hidden" name="selected_files" id="selected_files">
   <button type="submit" class="btn btn-primary">Share Selected</button>
 </form>
@@ -28,28 +37,3 @@
   </div>
 </form>
 {% endblock %}
-
-<script>
-  let selectedFiles = [];
-
-  function updateSelectedFiles() {
-    selectedFiles = [];  // Reset selected files on each change
-    const checkboxes = document.querySelectorAll('#files input[type="checkbox"]');
-    for (const checkbox of checkboxes) {
-      if (checkbox.checked) {
-        selectedFiles.push(checkbox.value);
-      }
-    }
-    document.getElementById('selected_files').value = JSON.stringify(selectedFiles);  // Convert to JSON string
-    session.storage.setItem('selected_file_ids', JSON.stringify(selectedFiles));
-  }
-
-  function submitSelectedFiles() {
-    // Access selected files from hidden field (already updated by updateSelectedFiles)
-    const selectedFiles = JSON.parse(document.getElementById('selected_files').value);
-
-    // Perform any validation on selectedFiles (optional)
-
-    return true;  // Allow form submission
-  }
-</script>
