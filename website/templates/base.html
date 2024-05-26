@@ -31,7 +31,9 @@
         <div class="navbar-nav">
           {% if user.is_authenticated %}
           <a class="nav-item nav-link" id="home" href="/">Home</a>
-          <span class="nav-item nav-link disabled">Welcome, {{ user.email }}</span>  <a class="nav-item nav-link" id="logout" href="/logout">Logout</a>          {% else %}
+          <a class="nav-item nav-link" id="logout" href="/logout">Logout</a>
+          <span class="nav-item nav-link disabled">Welcome, {{ user.email }}</span>  
+          {% else %}
           <a class="nav-item nav-link" id="login" href="/login">Login</a>
           <a class="nav-item nav-link" id="signUp" href="/sign-up">Sign Up</a>
           {% endif %}
@@ -110,8 +112,8 @@
       })
       .catch(error => console.error(error));
   }
-  </script>
-  <script>
+</script>
+<script>
     function updateSelectedFiles() {
       const checkboxes = document.querySelectorAll('#files input[type="checkbox"]');
       let selectedFilesCount = 0;
@@ -128,7 +130,7 @@
   
     // Call updateSelectedFiles() initially to set the button state
     updateSelectedFiles();
-  </script>
+</script>
 {% endblock %}
   </body>
 </html>
