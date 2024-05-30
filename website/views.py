@@ -152,6 +152,7 @@ def share_file():
       return redirect(url_for('views.select_users'))  # Redirect back to the user selection page
 
 @views.route('/download-file/<filename>')
+@login_required
 def download_file(filename):
   user_id = current_user.id  # Assuming you have a current_user object available
   # Construct user-specific filepath based on uploaded filename
@@ -167,3 +168,14 @@ def download_file(filename):
   else:
     flash('File not found!', 'error')
     return redirect(url_for('views.home'))  # Redirect back to the home page
+
+@views.route('/admin')
+@login_required
+def admin():
+  # Check if user is logged in and has admin privileges
+  if current_user.is_authenticated and current_user.is_admin:
+    # Display admin panel content (e.g., user management, file management)
+    return render_template('admin.html')  # Replace 'admin.html' with your admin panel template
+  else:
+    # Redirect to login page or display an unauthorized message
+    return redirect(url_for('auth.login'))

@@ -13,7 +13,7 @@ def create_admin_user():
     admin_user = User.query.filter_by(email=email).first()
     # Check if admin user already exists
     if not admin_user:
-      admin_user = User(email=email, first_name="admin", password=generate_password_hash( "123", method='pbkdf2:sha256'))
+      admin_user = User(email=email, first_name="admin", password=generate_password_hash( "123", method='pbkdf2:sha256'), is_admin=True)
       db.session.add(admin_user)
       db.session.commit()
       print("Created admin user!")
