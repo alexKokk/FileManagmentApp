@@ -7,6 +7,17 @@ from flask_login import login_user, login_required, logout_user, current_user
 
 auth = Blueprint('auth', __name__)
 
+def create_admin_user():
+    """Creates an initial admin user with a default password."""   
+    email="admin@company.com"
+    admin_user = User.query.filter_by(email=email).first()
+    # Check if admin user already exists
+    if not admin_user:
+      admin_user = User(email=email, first_name="admin", password=generate_password_hash( "123", method='pbkdf2:sha256'))
+      db.session.add(admin_user)
+      db.session.commit()
+      print("Created admin user!")
+
 
 @auth.route('/login', methods=['GET', 'POST'])
 def login():
