@@ -151,7 +151,7 @@ def share_file():
       flash(f'An error occurred while sharing files: {str(e)}', 'error')
       return redirect(url_for('views.select_users'))  # Redirect back to the user selection page
 
-@views.route('/download-file/<filename>')
+@views.route('/download-file/<filename>', methods=['GET'])
 @login_required
 def download_file(filename):
   user_id = current_user.id  # Assuming you have a current_user object available
@@ -169,7 +169,7 @@ def download_file(filename):
     flash('File not found!', 'error')
     return redirect(url_for('views.home'))  # Redirect back to the home page
 
-@views.route('/admin')
+@views.route('/admin', methods=['GET'])
 @login_required
 def admin():
   # Check if user is logged in and has admin privileges
