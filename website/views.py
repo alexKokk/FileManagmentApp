@@ -78,7 +78,7 @@ def delete_file():
         flash('Error deleting file: {e}', category='error')
         return jsonify({'message': 'Error deleting file'}), 500
 
-@views.route('/update-selected-users', methods=['POST'])
+@views.route('/update-selected-files', methods=['POST'])
 @login_required
 def update_selected_users():
     try:
