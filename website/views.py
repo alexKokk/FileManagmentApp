@@ -174,8 +174,13 @@ def download_file(filename):
 def admin():
   # Check if user is logged in and has admin privileges
   if current_user.is_authenticated and current_user.is_admin:
-    # Display admin panel content (e.g., user management, file management)
-    return render_template('admin.html')  # Replace 'admin.html' with your admin panel template
+    # Get all users (excluding the current admin user)
+    users = User.query.filter(User.id != current_user.id).all()
+
+    # Pass the list of users to the admin.html template
+    return render_template('admin.html', users=users, user=current_user)
   else:
     # Redirect to login page or display an unauthorized message
     return redirect(url_for('auth.login'))
+
+

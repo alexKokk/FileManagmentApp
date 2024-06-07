@@ -75,3 +75,34 @@ def sign_up():
             return redirect(url_for('views.home'))
 
     return render_template("sign_up.html", user=current_user)
+
+@auth.route('/admin/manage_users', methods=['POST'])
+@login_required
+def manage_users():
+  if current_user.is_authenticated and current_user.is_admin:
+    users = User.query.filter(User.id != current_user.id).all()
+
+    selected_user_id = request.form.get('user_id')  # Assuming you submit the user ID in the POST request
+    selected_action = request.form.get('action')
+    new_password = request.form.get('user_password')  # Assuming you submit the new password in the POST request
+
+    if selected_action == 'delete':
+      # Validate user ID and perform secure deletion logic
+      user = User.query.get(selected_user_id)
+      if user:
+        db.session.delete(user)
+        db.session.commit()
+        flash('User deleted successfully!', 'success')
+      else:
+        flash('Invalid user ID for deletion!', 'error')
+    elif selected_action == 'change_password':
+      # Validate user ID and new password, then update password
+      user = User.query.get(selected_user_id)
+      if user and new_password:
+        # Update user password securely (hashing)
+        user.password = generate_password_hash(new_password, method='pbkdf2:sha256')
+        db.session.commit()
+      else:
+        flash('Invalid user ID or password!', 'error')
+    users = User.query.filter(User.id != current_user.id).all()
+    return render_template('admin.html', users=users, user=current_user)  # Re-render with flash messages
