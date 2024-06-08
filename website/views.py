@@ -95,12 +95,9 @@ def update_selected_users():
         print(f"Error updating selected files: {e}")
         return jsonify({'error': 'Error updating selected files'}), 500
 
-@views.route('/select-users', methods=['GET','POST'])
+@views.route('/select-users', methods=['POST'])
 @login_required
 def select_users():
-    # # After successful retrieval, remove from session
-    # session.pop('selected_file_ids', None)    
-    # Get all users (excluding the current user)
     if request.method == 'POST':
         all_users = User.query.all()
         stored_selected_file_ids = json.loads(session.get('selected_file_ids', '[]'))  # Handle missing key gracefully
@@ -111,7 +108,7 @@ def select_users():
         available_user_data = []
         for user in available_users:
             available_user_data.append({'id': user.id, 'email': user.email})    
-    return render_template("select_users.html", available_users=available_user_data, user=current_user)  # Render select_users.html
+        return render_template("select_users.html", available_users=available_user_data, user=current_user)  # Render select_users.html
 
 @views.route('/share-file', methods=['POST'])
 @login_required
@@ -138,18 +135,17 @@ def share_file():
         for file in selected_files:
           if file not in already_shared_files:
             file.shared_with.append(user)  # Add the user to the file's "shared_with" relationship
-            flash(f'succeed File Share: {file}', 'success')
+            flash('succeed File Share' , 'success')
       db.session.commit()   
       # Clear temporary session data
       session.pop('selected_file_ids', None)    
-      # Flash a success message (consider using Flask-WTF for forms and flash messages)
       #flash('Files shared successfully!', 'success')
       return redirect(url_for('views.home'))  # Redirect to the home page after sharing 
     except Exception as e:
       # Handle errors appropriately
       db.session.rollback()  # Rollback database changes on error
       flash(f'An error occurred while sharing files: {str(e)}', 'error')
-      return redirect(url_for('views.select_users'))  # Redirect back to the user selection page
+      return redirect(url_for('views.home'))  # Redirect back to the user selection page
 
 @views.route('/download-file/<filename>', methods=['GET'])
 @login_required
