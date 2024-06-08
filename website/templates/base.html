@@ -90,7 +90,8 @@
   }
 </script>
 <script>
-  function updateSelectedFiles() {
+  function updateSelectedFiless() {
+    updateSelectedFiles();
     selectedFiles = [];  // Reset selected files on each change
     const checkboxes = document.querySelectorAll('#files input[type="checkbox"]');
     for (const checkbox of checkboxes) {
@@ -100,7 +101,7 @@
     }
   
     // Send data to server using an AJAX request (update session)
-    fetch('/update-selected-users', {
+    fetch('/update-selected-files', {
       method: 'POST',
       body: JSON.stringify({ selected_files: selectedFiles }),
       headers: { 'Content-Type': 'application/json' }
